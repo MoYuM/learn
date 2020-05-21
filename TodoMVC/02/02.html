@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>TodoMVC</title>
+	<link rel="stylesheet" href="./02.css">
+</head>
+
+<body>
+
+	<section class="todoapp">
+		<header class="header">
+			<h1>todos</h1>
+			<input 
+				class="new-todo"
+				placeholder="what needs to be done?"
+				v-model="newTodo"
+				@keyup.enter="addTodo"
+			>
+		</header>
+		<section class="main">
+			<input 
+				class="toggle-all" 
+				id="toggle-all" 
+				type="checkbox"
+				v-model="allDone"
+			>
+			<label for="toggle-all">toggle-all</label>
+			<ul class="todo-list">
+				<li 
+					class="todo"
+					v-for="todo in filteredTodos"
+					:key="todo.id"
+					:class="{ completed: todo.completed}"
+				>
+					<div class="view">
+						<!-- 用v-model直接绑定todo.completed -->
+						<input class="toggle" type="checkbox" v-model="todo.completed">
+						<label>{{ todo.title }}</label>
+						<button class="destroy" @click="removeTodo(todo)"></button>
+					</div>
+					<input class="edit" type="text">
+				</li>
+			</ul>
+		</section>
+		<footer class="footer">
+			<span class="todo-count">
+				<strong>{{remaining}}</strong>left
+			</span>
+			<ul class="filters">
+				<li>
+					<a href="#/all">All</a>
+				</li>
+				<li>
+					<a href="#/active">Active</a>
+				</li>
+				<li>
+					<a href="#/comleted">Completed</a>
+				</li>
+			</ul>
+			<button 
+				class="clear-completed"
+				@click="removeCompleted"	
+			>
+				Clear completed
+			</button>
+		</footer>
+	</section>
+	<footer class="info">
+		<p>Double-click to edit a todo</p>
+		<p>Written by </p>
+	</footer>
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<script>
+		//localStorage persistence
+		var STORAGE_KEY = "todos-vuejs-2.0";//设置Storage中的每一项属性名
+		var todoStorage = {
+			fetch: function () {
+				//用getItem拿到每一项数据，再用JSON.parse从字符串变成数组
+				var todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+				//遍历拿到的数组，并未每一项添加一个id，数值为其再数组中的索引
+				todos.forEach(function(todo, index) {
+					todo.id = index;
+				});
+				todoStorage.uid = todos.length;//不知道干啥的
+				return todos;//返回todos
+			},
+			save: function (todos) {
+				//把todos变成字符串，再存回Storage
+				//不知道干啥的
+				localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+			}
+		};
+
+		//visibility filters
+		var filters = {
+			all: function (todos) {
+				return todos;
+			},
+			active: function (todos) {
+				return todos.filter(function(todo){
+					return !todo.completed;//看看人家是怎么写的，一句话搞定 
+				})
+			},
+			completed: function (todos) {
+				return todos.filter(function(todo){
+					return todo.completed;
+				})
+			}
+		}
+
+		//app vue instance
+		var app = new Vue({
+			data: {
+				todos: todoStorage.fetch(),
+				newTodo: "",
+				visibility: "all"
+			},
+
+			computed: {
+				//直接把已过滤的todos作为显示的主题
+				filteredTodos: function () {
+					return filters[this.visibility](this.todos);
+				},
+				remaining: function() {
+						return filters.active(this.todos).length;
+				},
+				allDone: {
+					get: function () {
+						return this.remaining === 0;
+					},
+					set: function (value) {
+						return this.todos.forEach(function(todo){
+							return todo.completed = value;
+						})
+					}
+				},
+			},
+
+			methods: {
+				//添加todo方法
+				addTodo: function () {
+					var value = this.newTodo && this.newTodo.trim();//将输入框中的值传给value，并去除头尾空格
+					if (!value) {
+						return;//不输入就直接返回
+					}
+					this.todos.push({
+						id: todoStorage.uid++,
+						title: value,//输入内容以title形式传入todos
+						comleted: false//默认未完成
+					});
+					this.newTodo = "";//输入框归零
+				},
+
+				//删除方法
+				removeTodo: function (todo) {
+					//直接把todo传进来，然后用splice删除
+					return this.todos.splice(this.todos.indexOf(todo), 1)
+				},
+
+				//编辑方法--开始编辑
+				editTodo: function () {
+					this.haha = 1;
+					console.log(this.haha);
+				},
+
+				//编辑方法--编辑完成
+				doneEdit: function () {
+
+				},
+
+				//编辑方法--取消编辑
+				cancelEdit: function () {
+
+				},
+
+				//删除已完成
+				removeCompleted: function () {
+					this.todos = filters.active(this.todos)
+				}
+			}
+		})
+
+		//handle routing
+		function onHashChange() {
+			//hash拿到了#/completed,再用replace加正则把#/去掉，剩下completed
+			var visibility = window.location.hash.replace(/#\/?/, "")
+			if(filters[visibility]) {
+				app.visibility = visibility;
+			}else{
+				window.location.hash = "";
+				app.visibility = "all"
+			}
+		}
+
+		window.addEventListener("hashchange", onHashChange);
+    onHashChange();
+
+		app.$mount(".todoapp");
+
+	</script>
+</body>
+
+</html>

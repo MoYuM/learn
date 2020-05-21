@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<title>test</title>
+</head>
+<div id="app">
+	<input type="checkbox" v-model="test">
+	<h1>test:{{test}}</h1>
+</div>
+
+<body>
+
+	<script>
+		var app = new Vue({
+			el: '#app',
+			data: {
+			},
+			computed: {
+				test: {
+					get: function () {
+						console.log('get')
+					},
+					set: function (value) {
+						console.log('set:' + value)
+					},
+				}
+			}
+		})
+	</script>
+</body>
+
+</html>
