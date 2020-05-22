@@ -15,21 +15,14 @@
 <body>
 
 	<script>
-		var app = new Vue({
-			el: '#app',
-			data: {
-			},
-			computed: {
-				test: {
-					get: function () {
-						console.log('get')
-					},
-					set: function (value) {
-						console.log('set:' + value)
-					},
-				}
+		var todo = {}
+		function test (todo) {
+			if(!todo){
+				return
 			}
-		})
+			console.log('2')
+		}
+		test();
 	</script>
 </body>
 

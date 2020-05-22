@@ -41,13 +41,21 @@
 						<label>{{ todo.title }}</label>
 						<button class="destroy" @click="removeTodo(todo)"></button>
 					</div>
-					<input class="edit" type="text">
+					<input
+            class="edit"
+            type="text"
+            v-model="todo.title"
+            v-todo-focus="todo == editedTodo"
+            @blur="doneEdit(todo)"
+            @keyup.enter="doneEdit(todo)"
+            @keyup.esc="cancelEdit(todo)"
+          />
 				</li>
 			</ul>
 		</section>
 		<footer class="footer">
 			<span class="todo-count">
-				<strong>{{remaining}}</strong>left
+				<strong>{{remaining}}</strong> {{ remaining | pluralize }} left
 			</span>
 			<ul class="filters">
 				<li>
@@ -57,12 +65,13 @@
 					<a href="#/active">Active</a>
 				</li>
 				<li>
-					<a href="#/comleted">Completed</a>
+					<a href="#/completed">Completed</a>
 				</li>
 			</ul>
 			<button 
 				class="clear-completed"
-				@click="removeCompleted"	
+				@click="removeCompleted"
+				v-show="todos.length > remaining"
 			>
 				Clear completed
 			</button>
@@ -139,6 +148,12 @@
 				},
 			},
 
+			filters: {
+				pluralize: function (n) {
+					return n <= 1 ? 'item' : 'items'
+				}
+			},
+
 			methods: {
 				//添加todo方法
 				addTodo: function () {
@@ -161,8 +176,8 @@
 				},
 
 				//编辑方法--开始编辑
-				editTodo: function () {
-					this.haha = 1;
+				editTodo: function (todo) {
+					this.haha = todo.title;
 					console.log(this.haha);
 				},
 
