@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+  <title>jquery</title>
+</head>
+
+<body>
+  <div>
+    <input type="text" class="text" value="123">
+    <h1>计数：</h1>
+    <button class="add">+</button>
+    <button class="sub">-</button>
+    <button class="result">=</button>
+  </div>
+  <script>
+    jQuery(function(){
+      var input = $('input');
+      var how = '';
+      var numcache1 = 0;
+      var numcache2 = 0;
+      $('.add').click(function(){
+        numcache1 = parseInt(input.val());
+        input.val('');
+        how = 'add';
+        input[0].focus()
+      });
+      $('.result').click(function(){
+        numcache2 = parseInt(input.val())
+        if(how === 'add'){
+          input.val(numcache1 + numcache2)
+        }
+      })
+    })
+  </script>
+  <style>
+    .wrapper {
+      width: 300px;
+      height: 300px;
+      background-color: blueviolet;
+      margin: 0 auto;;
+      position: relative;
+    }
+
+    .inner {
+      width: 50px;
+      height: 50px;
+      background-color: burlywood;
+      position: absolute;
+      top: 50px;
+      left: 0;
+    }
+
+    button {
+      top: 100px;
+    }
+  </style>
+</body>
+
+</html>
