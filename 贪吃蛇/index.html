@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    #app {
+      width: 500px;
+      height: 500px;
+      border: 1px solid black;
+      margin: 100px auto;
+      position: relative;
+    }
+
+    .head {
+      width: 10px;
+      height: 10px;
+      background-color: coral;
+      position: absolute;
+    }
+
+    .body {
+      width: 10px;
+      height: 10px;
+      background-color: coral;
+      position: absolute;
+    }
+
+    .alert {
+      width: 500px;
+      height: 500px;
+      background-color: cadetblue;
+      opacity: 0.3;
+      color: crimson;
+      font-size: 30px;
+      text-align: center;
+    }
+
+    .alert .retry {
+      width: 250px;
+      height: 100px;
+      border-radius: 20px;
+    }
+  </style>
+  <div id="app">
+    <div class="head" :style="{top:top+'px',left:left+'px'}" v-if="lose"></div>
+    <div class="body" :style="{top:top2+'px',left:left2+'px'}"></div>
+    <div class="body" :style="{top:top3+'px',left:left3+'px'}"></div>
+    <div class="alert" v-if="alert">游戏失败!
+      <button class="retry" @click="retry">再来一次</button>
+    </div>
+  </div>
+  <script>
+    var app = new Vue({
+      el: '#app',
+      data: {
+        top: 10,
+        left: 30,
+        top2: 10,
+        left2: 20,
+        top3: 10,
+        left3: 10,
+        keydown: true,
+        keyright: true,
+        keyleft: true,
+        keyup: true,
+        timerDown: '',
+        timerRight: '',
+        timerLeft: '',
+        timerUp: '',
+        lose: true,
+        key: true
+      },
+      computed: {
+        alert: function () {
+          if (this.left == 0 || this.top == 0 || this.left == 490 || this.top == 490) {
+            clearInterval(this.timerDown)
+            clearInterval(this.timerLeft)
+            clearInterval(this.timerUp)
+            clearInterval(this.timerRight)
+            this.key = false
+            return true
+          }
+        },
+        bodyposition: function() {
+          
+        }
+      },
+      methods: {
+        moveDown: function () {
+          if (this.keydown) {//加个锁
+            this.keydown = false;
+            this.keyleft = true;
+            this.keyright = true;
+            this.keyup = true;
+            clearInterval(this.timerRight);
+            clearInterval(this.timerLeft);
+            clearInterval(this.timerUp);
+            app.top3 = app.top2;
+            app.left3 = app.left2;
+            app.top2 = app.top;
+            app.left2 = app.left
+            app.top += 10;
+            this.timerDown = setInterval(function () {
+              app.top3 = app.top2;
+            app.left3 = app.left2;
+              app.top2 = app.top
+              app.left2 = app.left
+              app.top += 10;
+            }, 500)
+          }
+        },
+        moveRight: function () {
+          if (this.keyright) {
+            this.keyright = false;
+            this.keyleft = true;
+            this.keydown = true;
+            this.keyup = true;
+            clearInterval(this.timerDown);
+            clearInterval(this.timerLeft);
+            clearInterval(this.timerUp);
+            app.top3 = app.top2;
+            app.left3 = app.left2;
+            app.top2 = app.top
+            app.left2 = app.left
+            app.left += 10;
+            this.timerRight = setInterval(function () {
+              app.top3 = app.top2;
+            app.left3 = app.left2;
+              app.top2 = app.top
+              app.left2 = app.left
+              app.left += 10
+            }, 500)
+          }
+        },
+        moveLeft: function () {
+          if (this.keyleft) {
+            this.keyleft = false;
+            this.keydown = true;
+            this.keyright = true;
+            this.keyup = true;
+            clearInterval(this.timerDown);
+            clearInterval(this.timerRight);
+            clearInterval(this.timerUp);
+            app.top3 = app.top2;
+            app.left3 = app.left2;
+            app.top2 = app.top
+            app.left2 = app.left
+            app.left -= 10
+            this.timerLeft = setInterval(function () {
+              app.top3 = app.top2;
+            app.left3 = app.left2;
+              app.top2 = app.top
+              app.left2 = app.left
+              app.left -= 10
+            }, 500)
+          }
+        },
+        moveUp: function () {
+          console.log('a')
+          console.log(this.keyup)
+          if (this.keyup) {
+            this.keyup = false;
+            this.keyleft = true;
+            this.keyright = true;
+            this.keydown = true;
+            clearInterval(this.timerDown);
+            clearInterval(this.timerRight);
+            clearInterval(this.timerLeft);
+            app.top3 = app.top2;
+            app.left3 = app.left2;
+            app.top2 = app.top
+            app.left2 = app.left
+            app.top -= 10
+            this.timerUp = setInterval(function () {
+              app.top3 = app.top2;
+            app.left3 = app.left2;
+              app.top2 = app.top
+              app.left2 = app.left
+              app.top -= 10
+            }, 500)
+          }
+        },
+
+        //重新开始
+        retry: function () {
+          this.top = 200;
+          this.left = 200;
+          this.keyup = true;
+          this.keyleft = true;
+          this.keyright = true;
+          this.keydown = true;
+          this.key = true
+        }
+      },
+      //想要给元素绑定键盘事件，只有在元素有焦点时才会触发，所以将键盘事件绑定在全局
+      created: function () {
+        var _this = this;//将this传进下面的函数中
+        document.onkeydown = function (e) {
+          let key = window.event.keyCode;
+          if (_this.key) {//加个锁
+            if (key == 40) {
+              _this.moveDown();
+              return false;//阻止默认事件
+            } else if (key == 38) {
+              _this.moveUp();
+              return false;
+            } else if (key == 37) {
+              _this.moveLeft();
+              return false;
+            } else if (key == 39) {
+              _this.moveRight();
+              return false;
+            }
+          }
+        }
+      }
+    });
+
+  </script>
+</body>
+
+</html>
