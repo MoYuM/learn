@@ -142,12 +142,7 @@
 
 <body>
 	<script>
-		var ul = document.getElementsByTagName('ul')[0];
-		ul.onclick = function (e) {
-			var event = e || window.event;//兼容
-			var target = event.target || event.srcElement;
-			console.log(target.innerText)
-		}
+		console.log(Math.ceil(Math.random()*10*5))
 	</script>
 </body>
 

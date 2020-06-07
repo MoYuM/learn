@@ -28,6 +28,7 @@
       height: 10px;
       background-color: coral;
       position: absolute;
+      z-index: 9999;
     }
 
     .body {
@@ -35,6 +36,7 @@
       height: 10px;
       background-color: coral;
       position: absolute;
+      z-index: 9999;
     }
 
     .alert {
@@ -52,12 +54,19 @@
       height: 100px;
       border-radius: 20px;
     }
+
+    .apple {
+      width: 10px;
+      height: 10px;
+      background-color: chartreuse;
+      position: absolute;
+    }
   </style>
   <div id="app">
-    <div class="head" :style="{top:top+'px',left:left+'px'}" v-if="lose"></div>
-    <div class="body" :style="{top:top2+'px',left:left2+'px'}"></div>
-    <div class="body" :style="{top:top3+'px',left:left3+'px'}"></div>
-    <div class="alert" v-if="alert">游戏失败!
+    <div class="head" :style="{top:position[0][0]+'px',left:position[0][1]+'px'}"></div>
+    <div class="body" v-for="pos in position" :style="{top:pos[0]+'px',left:pos[1]+'px'}"></div>
+    <div class="apple" :style="{top:appletop+'px',left:appleleft+'px'}"></div>
+    <div class="alert" v-if="alert">Game Over!
       <button class="retry" @click="retry">再来一次</button>
     </div>
   </div>
@@ -65,12 +74,6 @@
     var app = new Vue({
       el: '#app',
       data: {
-        top: 10,
-        left: 30,
-        top2: 10,
-        left2: 20,
-        top3: 10,
-        left3: 10,
         keydown: true,
         keyright: true,
         keyleft: true,
@@ -79,22 +82,25 @@
         timerRight: '',
         timerLeft: '',
         timerUp: '',
-        lose: true,
-        key: true
+        key: true,
+        appletop: 10,
+        appleleft: 50,
+        position: [
+          [10, 30]
+        ]
       },
       computed: {
         alert: function () {
-          if (this.left == 0 || this.top == 0 || this.left == 490 || this.top == 490) {
-            clearInterval(this.timerDown)
-            clearInterval(this.timerLeft)
-            clearInterval(this.timerUp)
-            clearInterval(this.timerRight)
-            this.key = false
-            return true
+          if (this.position[0][0] == 0 || this.position[0][1] == 0 || this.position[0][0] == 490 || this.position[0][1] == 490
+          || this.position.indexOf(this.position[0], 1) >= 1) {
+            console.log('gameover')
+            // clearInterval(this.timerDown)
+            // clearInterval(this.timerLeft)
+            // clearInterval(this.timerUp)
+            // clearInterval(this.timerRight)
+            // this.key = false
+            // return true
           }
-        },
-        bodyposition: function() {
-          
         }
       },
       methods: {
@@ -107,17 +113,17 @@
             clearInterval(this.timerRight);
             clearInterval(this.timerLeft);
             clearInterval(this.timerUp);
-            app.top3 = app.top2;
-            app.left3 = app.left2;
-            app.top2 = app.top;
-            app.left2 = app.left
-            app.top += 10;
+            follow()
+            this.position[0][0] += 10;
+            this.position[0].splice(2)//让vue检测到变化
             this.timerDown = setInterval(function () {
-              app.top3 = app.top2;
-            app.left3 = app.left2;
-              app.top2 = app.top
-              app.left2 = app.left
-              app.top += 10;
+              temptop = app.position[0][0];
+              templeft = app.position[0][1];
+              follow()
+              app.position[0][0] += 10;
+              app.position[0].splice(2)
+              eatApple()
+              console.log(app.position.indexOf(app.position[0], 1))
             }, 500)
           }
         },
@@ -130,17 +136,17 @@
             clearInterval(this.timerDown);
             clearInterval(this.timerLeft);
             clearInterval(this.timerUp);
-            app.top3 = app.top2;
-            app.left3 = app.left2;
-            app.top2 = app.top
-            app.left2 = app.left
-            app.left += 10;
+            follow()
+            this.position[0][1] += 10;
+            this.position[0].splice(2)//让vue检测到变化
             this.timerRight = setInterval(function () {
-              app.top3 = app.top2;
-            app.left3 = app.left2;
-              app.top2 = app.top
-              app.left2 = app.left
-              app.left += 10
+              temptop = app.position[0][0];
+              templeft = app.position[0][1];
+              follow()
+              app.position[0][1] += 10;
+              app.position[0].splice(2)
+              eatApple()
+              console.log(app.position.indexOf(app.position[0], 1))
             }, 500)
           }
         },
@@ -153,23 +159,21 @@
             clearInterval(this.timerDown);
             clearInterval(this.timerRight);
             clearInterval(this.timerUp);
-            app.top3 = app.top2;
-            app.left3 = app.left2;
-            app.top2 = app.top
-            app.left2 = app.left
-            app.left -= 10
+            follow()
+            this.position[0][1] -= 10;
+            this.position[0].splice(2)//让vue检测到变化
             this.timerLeft = setInterval(function () {
-              app.top3 = app.top2;
-            app.left3 = app.left2;
-              app.top2 = app.top
-              app.left2 = app.left
-              app.left -= 10
+              temptop = app.position[0][0];
+              templeft = app.position[0][1];
+              follow()
+              app.position[0][1] -= 10;
+              app.position[0].splice(2)
+              eatApple()
+              console.log(app.position.indexOf(app.position[0], 1))
             }, 500)
           }
         },
         moveUp: function () {
-          console.log('a')
-          console.log(this.keyup)
           if (this.keyup) {
             this.keyup = false;
             this.keyleft = true;
@@ -178,25 +182,25 @@
             clearInterval(this.timerDown);
             clearInterval(this.timerRight);
             clearInterval(this.timerLeft);
-            app.top3 = app.top2;
-            app.left3 = app.left2;
-            app.top2 = app.top
-            app.left2 = app.left
-            app.top -= 10
+            follow()
+            this.position[0][0] -= 10;
+            this.position[0].splice(2)//让vue检测到变化
             this.timerUp = setInterval(function () {
-              app.top3 = app.top2;
-            app.left3 = app.left2;
-              app.top2 = app.top
-              app.left2 = app.left
-              app.top -= 10
+              temptop = app.position[0][0];
+              templeft = app.position[0][1];
+              follow();
+              app.position[0][0] -= 10;
+              app.position[0].splice(2)
+              eatApple()
+              console.log(app.position.indexOf(app.position[0], 1))
             }, 500)
           }
         },
 
         //重新开始
         retry: function () {
-          this.top = 200;
-          this.left = 200;
+          this.position[0][0] = 200;
+          this.position[0][1] = 200;
           this.keyup = true;
           this.keyleft = true;
           this.keyright = true;
@@ -228,6 +232,20 @@
       }
     });
 
+
+    function follow() {
+      for (i = app.position.length; i > 1; i--) {
+        app.position[i - 1][0] = app.position[i - 2][0]
+        app.position[i - 1][1] = app.position[i - 2][1]
+      }
+    }
+    function eatApple() {
+      if (app.position[0][0] == app.appletop && app.position[0][1] == app.appleleft) {
+        app.appleleft = Math.ceil(Math.random() * 10 * 5) * 10;
+        app.appletop = Math.ceil(Math.random() * 10 * 5) * 10;
+        app.position.push([temptop, templeft])
+      }
+    }
   </script>
 </body>
 
