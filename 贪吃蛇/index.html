@@ -16,10 +16,11 @@
     }
 
     #app {
-      width: 500px;
-      height: 500px;
-      border: 1px solid black;
+      width: 250px;
+      height: 250px;
+      border: 3px solid black;
       margin: 100px auto;
+      background-color: #eeeeee;
       position: relative;
     }
 
@@ -28,7 +29,6 @@
       height: 10px;
       background-color: coral;
       position: absolute;
-      z-index: 9999;
     }
 
     .body {
@@ -36,23 +36,33 @@
       height: 10px;
       background-color: coral;
       position: absolute;
-      z-index: 9999;
     }
 
     .alert {
-      width: 500px;
-      height: 500px;
+      width: 250px;
+      height: 250px;
       background-color: cadetblue;
-      opacity: 0.3;
+      opacity: 0.5;
       color: crimson;
       font-size: 30px;
       text-align: center;
+      overflow: hidden;
     }
 
     .alert .retry {
-      width: 250px;
-      height: 100px;
-      border-radius: 20px;
+      width: 130px;
+      height: 50px;
+      border-radius: 10px;
+      font-size: 20px;
+      line-height: 50px;
+      color: black;
+      margin-top: 10px;
+    }
+
+    .alert .gameover {
+      font-size: 40px;
+      margin-top: 10px;
+      z-index: 99;
     }
 
     .apple {
@@ -61,12 +71,27 @@
       background-color: chartreuse;
       position: absolute;
     }
+
+    .score {
+      position: absolute;
+      top: -25px;
+    }
+
+    .level {
+      position: absolute;
+      top: -25px;
+      right: 0;
+    }
   </style>
   <div id="app">
     <div class="head" :style="{top:position[0][0]+'px',left:position[0][1]+'px'}"></div>
     <div class="body" v-for="pos in position" :style="{top:pos[0]+'px',left:pos[1]+'px'}"></div>
     <div class="apple" :style="{top:appletop+'px',left:appleleft+'px'}"></div>
-    <div class="alert" v-if="alert">Game Over!
+    <div class="score">分数：{{score}}</div>
+    <div class="level">难度：{{level}}</div>
+    <div class="alert" v-if="alert">
+      <p class="gameover">Game Over!</p>
+      <p class="gameoverscore">Score:{{score}}</p>
       <button class="retry" @click="retry">再来一次</button>
     </div>
   </div>
@@ -74,6 +99,9 @@
     var app = new Vue({
       el: '#app',
       data: {
+        score: 0,
+        speed: 400,
+        level: 1,
         keydown: true,
         keyright: true,
         keyleft: true,
@@ -85,21 +113,21 @@
         key: true,
         appletop: 10,
         appleleft: 50,
+        eatSelf: false,
         position: [
           [10, 30]
         ]
       },
       computed: {
         alert: function () {
-          if (this.position[0][0] == 0 || this.position[0][1] == 0 || this.position[0][0] == 490 || this.position[0][1] == 490
-          || this.position.indexOf(this.position[0], 1) >= 1) {
-            console.log('gameover')
-            // clearInterval(this.timerDown)
-            // clearInterval(this.timerLeft)
-            // clearInterval(this.timerUp)
-            // clearInterval(this.timerRight)
-            // this.key = false
-            // return true
+          if (this.position[0][0] == -10 || this.position[0][1] == -10 || this.position[0][0] == 250 || this.position[0][1] == 250
+            || this.eatSelf) {
+            clearInterval(this.timerDown)
+            clearInterval(this.timerLeft)
+            clearInterval(this.timerUp)
+            clearInterval(this.timerRight)
+            this.key = false
+            return true
           }
         }
       },
@@ -109,28 +137,30 @@
             this.keydown = false;
             this.keyleft = true;
             this.keyright = true;
-            this.keyup = true;
+            this.keyup = false;
             clearInterval(this.timerRight);
             clearInterval(this.timerLeft);
             clearInterval(this.timerUp);
             follow()
             this.position[0][0] += 10;
+            eatSelf()
+            eatApple()
             this.position[0].splice(2)//让vue检测到变化
             this.timerDown = setInterval(function () {
               temptop = app.position[0][0];
               templeft = app.position[0][1];
               follow()
               app.position[0][0] += 10;
+              eatSelf()
               app.position[0].splice(2)
               eatApple()
-              console.log(app.position.indexOf(app.position[0], 1))
-            }, 500)
+            }, app.speed)
           }
         },
         moveRight: function () {
           if (this.keyright) {
             this.keyright = false;
-            this.keyleft = true;
+            this.keyleft = false;
             this.keydown = true;
             this.keyup = true;
             clearInterval(this.timerDown);
@@ -138,39 +168,43 @@
             clearInterval(this.timerUp);
             follow()
             this.position[0][1] += 10;
+            eatSelf()
+            eatApple()
             this.position[0].splice(2)//让vue检测到变化
             this.timerRight = setInterval(function () {
               temptop = app.position[0][0];
               templeft = app.position[0][1];
               follow()
               app.position[0][1] += 10;
+              eatSelf()
               app.position[0].splice(2)
               eatApple()
-              console.log(app.position.indexOf(app.position[0], 1))
-            }, 500)
+            }, app.speed)
           }
         },
         moveLeft: function () {
           if (this.keyleft) {
             this.keyleft = false;
             this.keydown = true;
-            this.keyright = true;
+            this.keyright = false;
             this.keyup = true;
             clearInterval(this.timerDown);
             clearInterval(this.timerRight);
             clearInterval(this.timerUp);
             follow()
             this.position[0][1] -= 10;
+            eatSelf()
+            eatApple()
             this.position[0].splice(2)//让vue检测到变化
             this.timerLeft = setInterval(function () {
               temptop = app.position[0][0];
               templeft = app.position[0][1];
               follow()
               app.position[0][1] -= 10;
+              eatSelf()
               app.position[0].splice(2)
               eatApple()
-              console.log(app.position.indexOf(app.position[0], 1))
-            }, 500)
+            }, app.speed)
           }
         },
         moveUp: function () {
@@ -178,34 +212,38 @@
             this.keyup = false;
             this.keyleft = true;
             this.keyright = true;
-            this.keydown = true;
+            this.keydown = false;
             clearInterval(this.timerDown);
             clearInterval(this.timerRight);
             clearInterval(this.timerLeft);
             follow()
             this.position[0][0] -= 10;
+            eatSelf()
+            eatApple()
             this.position[0].splice(2)//让vue检测到变化
             this.timerUp = setInterval(function () {
               temptop = app.position[0][0];
               templeft = app.position[0][1];
               follow();
               app.position[0][0] -= 10;
+              eatSelf()
               app.position[0].splice(2)
               eatApple()
-              console.log(app.position.indexOf(app.position[0], 1))
-            }, 500)
+            }, app.speed)
           }
         },
 
         //重新开始
         retry: function () {
-          this.position[0][0] = 200;
-          this.position[0][1] = 200;
+          this.position = [[200, 200]]
           this.keyup = true;
           this.keyleft = true;
           this.keyright = true;
           this.keydown = true;
-          this.key = true
+          this.key = true;
+          this.eatSelf = false;
+          this.score = 0;
+          this.level = 1;
         }
       },
       //想要给元素绑定键盘事件，只有在元素有焦点时才会触发，所以将键盘事件绑定在全局
@@ -241,10 +279,41 @@
     }
     function eatApple() {
       if (app.position[0][0] == app.appletop && app.position[0][1] == app.appleleft) {
-        app.appleleft = Math.ceil(Math.random() * 10 * 5) * 10;
-        app.appletop = Math.ceil(Math.random() * 10 * 5) * 10;
+        app.score++
+        switch (app.score) {
+          case 5:
+            app.speed = 300;
+            app.level++;
+            break;
+          case 10:
+            app.speed = 200;
+            app.level++;
+            break;
+          case 15:
+            app.speed = 150
+            app.level++;
+            break;
+          case 20:
+            app.speed = 100;
+            app.level++;
+            break;
+          case 25:
+            app.speed = 50;
+            app.level++;
+            break
+        }
+        app.appleleft = Math.ceil(Math.random() * 10 * 2.4) * 10;
+        app.appletop = Math.ceil(Math.random() * 10 * 2.4) * 10;
         app.position.push([temptop, templeft])
       }
+    }
+    function eatSelf() {
+      let arr = app.position.slice(1)
+      arr.some(function (pos) {
+        if (pos[0] == app.position[0][0] && pos[1] == app.position[0][1]) {
+          app.eatSelf = true
+        }
+      })
     }
   </script>
 </body>
