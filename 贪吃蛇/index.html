@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>惊险刺激贪吃蛇</title>
 </head>
 
 <body>
@@ -19,7 +19,7 @@
       width: 250px;
       height: 250px;
       border: 3px solid black;
-      margin: 100px auto;
+      margin: 60px auto 10px auto;
       background-color: #eeeeee;
       position: relative;
     }
@@ -41,28 +41,38 @@
     .alert {
       width: 250px;
       height: 250px;
-      background-color: cadetblue;
-      opacity: 0.5;
-      color: crimson;
+      /* background-color: #7dd1a0; */
+      /* opacity: 0.5; */
+      color: rgb(216, 2, 45);
       font-size: 30px;
       text-align: center;
       overflow: hidden;
     }
 
     .alert .retry {
+      position: absolute;
       width: 130px;
       height: 50px;
       border-radius: 10px;
       font-size: 20px;
       line-height: 50px;
       color: black;
-      margin-top: 10px;
+      top: 110px;
+      left: 60px;
+      background-color: rgb(255, 252, 241);
     }
 
     .alert .gameover {
       font-size: 40px;
-      margin-top: 10px;
-      z-index: 99;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+    }
+
+    .alert .gameoverscore {
+      position: absolute;
+      top: 60px;
+      left: 70px;
     }
 
     .apple {
@@ -82,6 +92,26 @@
       top: -25px;
       right: 0;
     }
+
+    footer {
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    footer p {
+      margin-top: 5px;
+    }
+
+    .tutorial {
+      font-size: 30px;
+    }
+
+    .info {
+      font-size: 12px;
+    }
   </style>
   <div id="app">
     <div class="head" :style="{top:position[0][0]+'px',left:position[0][1]+'px'}"></div>
@@ -95,13 +125,27 @@
       <button class="retry" @click="retry">再来一次</button>
     </div>
   </div>
+  <footer>
+    <p class="tutorial">按方向键开始游戏</p>
+    <p class="recommend">推荐放大页面比例到150%游玩</p>
+    <p class="info">by hbc</p>
+  </footer>
   <script>
+    // 思路大体是这样的：
+    // 将蛇的每一部分身体的位置数据都存放在一个position数组里，
+    // 再通过绑定行间样式实现运动。每吃到一个苹果
+    // 就push一个新的数组进去，然后利用v-for监测数组的变化，实现蛇的变大
+    // 因为所有的位置信息都在一个数组里，所以基本上所有的功能都为绕这个position数组展开
+    // 撞到自己的身体即蛇头的位置和蛇身体的位置相等
+    // 但仍有小bug
+    // 蛇头只有撞出边框才会判定为失败
+    // 当只有蛇头时，刚吃到苹果时，如果按的太快，新长出的身体就会跟不上
     var app = new Vue({
       el: '#app',
       data: {
         score: 0,
         speed: 400,
-        level: 1,
+        level: "简单",
         keydown: true,
         keyright: true,
         keyleft: true,
@@ -114,9 +158,7 @@
         appletop: 10,
         appleleft: 50,
         eatSelf: false,
-        position: [
-          [10, 30]
-        ]
+        position: [[10, 30]]
       },
       computed: {
         alert: function () {
@@ -235,7 +277,7 @@
 
         //重新开始
         retry: function () {
-          this.position = [[200, 200]]
+          this.position = [[120, 120]]
           this.keyup = true;
           this.keyleft = true;
           this.keyright = true;
@@ -243,7 +285,8 @@
           this.key = true;
           this.eatSelf = false;
           this.score = 0;
-          this.level = 1;
+          this.level = "简单";
+          this.speed = 400;
         }
       },
       //想要给元素绑定键盘事件，只有在元素有焦点时才会触发，所以将键盘事件绑定在全局
@@ -251,6 +294,7 @@
         var _this = this;//将this传进下面的函数中
         document.onkeydown = function (e) {
           let key = window.event.keyCode;
+          //这里用switch case更好，但是懒得改了
           if (_this.key) {//加个锁
             if (key == 40) {
               _this.moveDown();
@@ -270,7 +314,6 @@
       }
     });
 
-
     function follow() {
       for (i = app.position.length; i > 1; i--) {
         app.position[i - 1][0] = app.position[i - 2][0]
@@ -283,24 +326,27 @@
         switch (app.score) {
           case 5:
             app.speed = 300;
-            app.level++;
+            app.level = "轻松";
             break;
           case 10:
             app.speed = 200;
-            app.level++;
+            app.level = "一般";
             break;
           case 15:
             app.speed = 150
-            app.level++;
+            app.level = "有点意思";
             break;
           case 20:
             app.speed = 100;
-            app.level++;
+            app.level = "出汗了吧";
             break;
           case 25:
             app.speed = 50;
-            app.level++;
+            app.level = "牛逼疯了";
             break
+          case 30:
+            app.speed = 20;
+            app.level = "你就是神！！！"
         }
         app.appleleft = Math.ceil(Math.random() * 10 * 2.4) * 10;
         app.appletop = Math.ceil(Math.random() * 10 * 2.4) * 10;
@@ -308,6 +354,7 @@
       }
     }
     function eatSelf() {
+      //这里本应使用indexof，但它内部用的是===的方法，而我这里比较的是数组，是引用值，故不会有好结果
       let arr = app.position.slice(1)
       arr.some(function (pos) {
         if (pos[0] == app.position[0][0] && pos[1] == app.position[0][1]) {
@@ -315,6 +362,7 @@
         }
       })
     }
+    console.log("一共有7个难度，简单，轻松，一般，有点意思，牛逼疯了，你就是神")
   </script>
 </body>
 
